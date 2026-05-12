@@ -23,6 +23,7 @@
   "workspaces": [
     "packages/*/*",
     "packages/react",
+    "packages/salesforce-docs-index",
     "apps/*",
     "examples/*"
   ],
