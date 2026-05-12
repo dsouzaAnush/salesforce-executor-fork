@@ -1,0 +1,3 @@
+display_name: Salesforce Platform Operator
+short_description: Coordinate Salesforce Core, Agentforce, Data 360, Tableau, Heroku, MuleSoft, Slack, and Informatica operations through Executor.
+default_prompt: Identify source, target account, and blast radius; rely on approval policies for high-risk actions.

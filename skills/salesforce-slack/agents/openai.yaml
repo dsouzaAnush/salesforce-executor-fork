@@ -1,0 +1,3 @@
+display_name: Salesforce Slack
+short_description: Work with Slack MCP, Web API, CLI, channels, messages, workflows, and search.
+default_prompt: Read first and require approval before posting, changing channels, inviting users, or triggering workflows.

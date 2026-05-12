@@ -1,0 +1,3 @@
+display_name: Salesforce Informatica
+short_description: Work with Informatica IDMC through official REST APIs and local adapters.
+default_prompt: Use IDMC official API adapter; require approval for jobs, asset changes, runtime changes, and user changes.

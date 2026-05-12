@@ -1,0 +1,3 @@
+display_name: Salesforce Tableau
+short_description: Work with Tableau Next MCP, semantic models, metrics, dashboards, KPIs, and Analytics Q&A.
+default_prompt: Prefer governed read-only Tableau Next and Data 360 discovery; require approval for publishing or semantic model changes.

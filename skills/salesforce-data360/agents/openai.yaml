@@ -1,0 +1,3 @@
+display_name: Salesforce Data 360
+short_description: Work with Data 360 MCP, Data Cloud APIs, ingestion, models, SQL, and semantic AI.
+default_prompt: Use search, payload_examples, then execute; require approval for Data 360 mutations.

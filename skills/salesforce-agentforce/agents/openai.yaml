@@ -1,0 +1,3 @@
+display_name: Salesforce Agentforce
+short_description: Work with Agentforce, Prompt Builder, custom Hosted MCP servers, and Agentforce Vibes MCP clients.
+default_prompt: Use official Hosted MCP and Agentforce Vibes docs first; require approval for action publication, deploys, and agent/org mutations.
