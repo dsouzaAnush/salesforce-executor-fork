@@ -149,6 +149,7 @@
         "@executor-js/storage-file": "workspace:*",
         "@executor-js/vite-plugin": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.12.1",
+        "@salesforce-executor/docs-index": "workspace:*",
         "@tanstack/react-router": "catalog:",
         "drizzle-orm": "catalog:",
         "effect": "catalog:",

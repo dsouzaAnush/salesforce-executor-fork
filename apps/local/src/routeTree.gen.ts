@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as SourcesRouteImport } from './routes/sources'
+import { Route as SourceManagerRouteImport } from './routes/source-manager'
 import { Route as SecretsRouteImport } from './routes/secrets'
 import { Route as PoliciesRouteImport } from './routes/policies'
 import { Route as ConnectionsRouteImport } from './routes/connections'
@@ -21,6 +23,16 @@ import { Route as PluginsPluginIdSplatRouteImport } from './routes/plugins.$plug
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SourcesRoute = SourcesRouteImport.update({
+  id: '/sources',
+  path: '/sources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SourceManagerRoute = SourceManagerRouteImport.update({
+  id: '/source-manager',
+  path: '/source-manager',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecretsRoute = SecretsRouteImport.update({
@@ -44,14 +56,14 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SourcesNamespaceRoute = SourcesNamespaceRouteImport.update({
-  id: '/sources/$namespace',
-  path: '/sources/$namespace',
-  getParentRoute: () => rootRouteImport,
+  id: '/$namespace',
+  path: '/$namespace',
+  getParentRoute: () => SourcesRoute,
 } as any)
 const SourcesAddPluginKeyRoute = SourcesAddPluginKeyRouteImport.update({
-  id: '/sources/add/$pluginKey',
-  path: '/sources/add/$pluginKey',
-  getParentRoute: () => rootRouteImport,
+  id: '/add/$pluginKey',
+  path: '/add/$pluginKey',
+  getParentRoute: () => SourcesRoute,
 } as any)
 const PluginsPluginIdSplatRoute = PluginsPluginIdSplatRouteImport.update({
   id: '/plugins/$pluginId/$',
@@ -64,6 +76,8 @@ export interface FileRoutesByFullPath {
   '/connections': typeof ConnectionsRoute
   '/policies': typeof PoliciesRoute
   '/secrets': typeof SecretsRoute
+  '/source-manager': typeof SourceManagerRoute
+  '/sources': typeof SourcesRouteWithChildren
   '/tools': typeof ToolsRoute
   '/sources/$namespace': typeof SourcesNamespaceRoute
   '/plugins/$pluginId/$': typeof PluginsPluginIdSplatRoute
@@ -74,6 +88,8 @@ export interface FileRoutesByTo {
   '/connections': typeof ConnectionsRoute
   '/policies': typeof PoliciesRoute
   '/secrets': typeof SecretsRoute
+  '/source-manager': typeof SourceManagerRoute
+  '/sources': typeof SourcesRouteWithChildren
   '/tools': typeof ToolsRoute
   '/sources/$namespace': typeof SourcesNamespaceRoute
   '/plugins/$pluginId/$': typeof PluginsPluginIdSplatRoute
@@ -85,6 +101,8 @@ export interface FileRoutesById {
   '/connections': typeof ConnectionsRoute
   '/policies': typeof PoliciesRoute
   '/secrets': typeof SecretsRoute
+  '/source-manager': typeof SourceManagerRoute
+  '/sources': typeof SourcesRouteWithChildren
   '/tools': typeof ToolsRoute
   '/sources/$namespace': typeof SourcesNamespaceRoute
   '/plugins/$pluginId/$': typeof PluginsPluginIdSplatRoute
@@ -97,6 +115,8 @@ export interface FileRouteTypes {
     | '/connections'
     | '/policies'
     | '/secrets'
+    | '/source-manager'
+    | '/sources'
     | '/tools'
     | '/sources/$namespace'
     | '/plugins/$pluginId/$'
@@ -107,6 +127,8 @@ export interface FileRouteTypes {
     | '/connections'
     | '/policies'
     | '/secrets'
+    | '/source-manager'
+    | '/sources'
     | '/tools'
     | '/sources/$namespace'
     | '/plugins/$pluginId/$'
@@ -117,6 +139,8 @@ export interface FileRouteTypes {
     | '/connections'
     | '/policies'
     | '/secrets'
+    | '/source-manager'
+    | '/sources'
     | '/tools'
     | '/sources/$namespace'
     | '/plugins/$pluginId/$'
@@ -128,10 +152,10 @@ export interface RootRouteChildren {
   ConnectionsRoute: typeof ConnectionsRoute
   PoliciesRoute: typeof PoliciesRoute
   SecretsRoute: typeof SecretsRoute
+  SourceManagerRoute: typeof SourceManagerRoute
+  SourcesRoute: typeof SourcesRouteWithChildren
   ToolsRoute: typeof ToolsRoute
-  SourcesNamespaceRoute: typeof SourcesNamespaceRoute
   PluginsPluginIdSplatRoute: typeof PluginsPluginIdSplatRoute
-  SourcesAddPluginKeyRoute: typeof SourcesAddPluginKeyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +165,20 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof ToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sources': {
+      id: '/sources'
+      path: '/sources'
+      fullPath: '/sources'
+      preLoaderRoute: typeof SourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/source-manager': {
+      id: '/source-manager'
+      path: '/source-manager'
+      fullPath: '/source-manager'
+      preLoaderRoute: typeof SourceManagerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/secrets': {
@@ -173,17 +211,17 @@ declare module '@tanstack/react-router' {
     }
     '/sources/$namespace': {
       id: '/sources/$namespace'
-      path: '/sources/$namespace'
+      path: '/$namespace'
       fullPath: '/sources/$namespace'
       preLoaderRoute: typeof SourcesNamespaceRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SourcesRoute
     }
     '/sources/add/$pluginKey': {
       id: '/sources/add/$pluginKey'
-      path: '/sources/add/$pluginKey'
+      path: '/add/$pluginKey'
       fullPath: '/sources/add/$pluginKey'
       preLoaderRoute: typeof SourcesAddPluginKeyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SourcesRoute
     }
     '/plugins/$pluginId/$': {
       id: '/plugins/$pluginId/$'
@@ -195,15 +233,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SourcesRouteChildren {
+  SourcesNamespaceRoute: typeof SourcesNamespaceRoute
+  SourcesAddPluginKeyRoute: typeof SourcesAddPluginKeyRoute
+}
+
+const SourcesRouteChildren: SourcesRouteChildren = {
+  SourcesNamespaceRoute: SourcesNamespaceRoute,
+  SourcesAddPluginKeyRoute: SourcesAddPluginKeyRoute,
+}
+
+const SourcesRouteWithChildren =
+  SourcesRoute._addFileChildren(SourcesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConnectionsRoute: ConnectionsRoute,
   PoliciesRoute: PoliciesRoute,
   SecretsRoute: SecretsRoute,
+  SourceManagerRoute: SourceManagerRoute,
+  SourcesRoute: SourcesRouteWithChildren,
   ToolsRoute: ToolsRoute,
-  SourcesNamespaceRoute: SourcesNamespaceRoute,
   PluginsPluginIdSplatRoute: PluginsPluginIdSplatRoute,
-  SourcesAddPluginKeyRoute: SourcesAddPluginKeyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

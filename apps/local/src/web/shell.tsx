@@ -1,28 +1,37 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
 import * as AsyncResult from "effect/unstable/reactivity/AsyncResult";
+import {
+  logoForNamespace,
+  salesforceProductLogos,
+  salesforceSourceRegistry,
+} from "@salesforce-executor/docs-index";
 import { sourcesAtom, sourcesOptimisticAtom, toolsAtom } from "@executor-js/react/api/atoms";
 import { useScope, useScopeInfo } from "@executor-js/react/api/scope-context";
 import { Button } from "@executor-js/react/components/button";
 import { SourceFavicon } from "@executor-js/react/components/source-favicon";
 import { CommandPalette } from "@executor-js/react/components/command-palette";
 import { useClientPlugins } from "@executor-js/sdk/client";
+import { OfficialProductLogo } from "../salesforce/OfficialProductLogo";
 
 // ── Env ─────────────────────────────────────────────────────────────────
 
 type AppMetaEnv = {
   readonly VITE_APP_VERSION: string;
   readonly VITE_GITHUB_URL: string;
+  readonly VITE_APP_NAME?: string;
 };
 
-const { VITE_APP_VERSION, VITE_GITHUB_URL } = (
+const { VITE_APP_VERSION, VITE_GITHUB_URL, VITE_APP_NAME } = (
   import.meta as ImportMeta & {
     readonly env: AppMetaEnv;
   }
 ).env;
+
+const APP_NAME = VITE_APP_NAME ?? "Salesforce Executor";
 
 // ── Version helpers ─────────────────────────────────────────────────────
 
@@ -268,23 +277,38 @@ function PluginNav(props: { pathname: string; onNavigate?: () => void }) {
 function SourceList(props: { pathname: string; onNavigate?: () => void }) {
   const scopeId = useScope();
   const sources = useAtomValue(sourcesOptimisticAtom(scopeId));
+  const registryOrder = useMemo(() => {
+    const order = new Map<string, number>();
+    for (const [index, source] of salesforceSourceRegistry.entries()) {
+      const config = source.executorSourceConfig;
+      if (config && "namespace" in config) order.set(config.namespace, index);
+    }
+    return order;
+  }, []);
 
   return AsyncResult.match(sources, {
     onInitial: () => <div className="px-2.5 py-2 text-xs text-muted-foreground">Loading…</div>,
     onFailure: () => (
       <div className="px-2.5 py-2 text-xs text-muted-foreground">No sources yet</div>
     ),
-    onSuccess: ({ value }) =>
-      value.length === 0 ? (
+    onSuccess: ({ value }) => {
+      const sortedSources = [...value].sort((left, right) => {
+        const leftOrder = registryOrder.get(left.id) ?? Number.MAX_SAFE_INTEGER;
+        const rightOrder = registryOrder.get(right.id) ?? Number.MAX_SAFE_INTEGER;
+        if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+        return left.name.localeCompare(right.name);
+      });
+      return sortedSources.length === 0 ? (
         <div className="px-2.5 py-2 text-sm leading-relaxed text-muted-foreground">
           No sources yet
         </div>
       ) : (
         <div className="flex flex-col gap-px">
-          {value.map((s) => {
+          {sortedSources.map((s) => {
             const detailPath = `/sources/${s.id}`;
             const active =
               props.pathname === detailPath || props.pathname.startsWith(`${detailPath}/`);
+            const logo = logoForNamespace(s.id);
             return (
               <Link
                 key={s.id}
@@ -298,7 +322,11 @@ function SourceList(props: { pathname: string; onNavigate?: () => void }) {
                     : "text-sidebar-foreground hover:bg-sidebar-active/60 hover:text-foreground",
                 ].join(" ")}
               >
-                <SourceFavicon sourceId={s.id} url={s.url} />
+                {logo ? (
+                  <OfficialProductLogo logo={logo} size="sm" />
+                ) : (
+                  <SourceFavicon sourceId={s.id} url={s.url} />
+                )}
                 <span className="flex-1 truncate">{s.name}</span>
                 <span className="rounded bg-secondary/50 px-1 py-px text-xs font-medium text-muted-foreground">
                   {s.kind}
@@ -307,7 +335,8 @@ function SourceList(props: { pathname: string; onNavigate?: () => void }) {
             );
           })}
         </div>
-      ),
+      );
+    },
   });
 }
 
@@ -343,7 +372,9 @@ function SidebarContent(props: {
   latestVersion: string | null;
   channel: UpdateChannel;
 }) {
-  const isHome = props.pathname === "/";
+  const isCatalog = props.pathname === "/";
+  const isSources = props.pathname === "/source-manager" || props.pathname.startsWith("/sources/");
+  const isTools = props.pathname === "/tools";
   const isSecrets = props.pathname === "/secrets";
   const isConnections = props.pathname === "/connections";
   const isPolicies = props.pathname === "/policies";
@@ -352,15 +383,30 @@ function SidebarContent(props: {
     <>
       {props.showBrand !== false && (
         <div className="flex h-12 shrink-0 items-center border-b border-sidebar-border px-4">
-          <Link to="/" className="flex items-center gap-1.5">
-            <span className="font-display text-base tracking-tight text-foreground">executor</span>
+          <Link to="/" className="flex items-center gap-2">
+            <OfficialProductLogo logo={salesforceProductLogos.salesforce} size="sm" />
+            <span className="font-display text-base tracking-tight text-foreground">
+              {APP_NAME}
+            </span>
           </Link>
         </div>
       )}
 
       <nav className="flex flex-1 flex-col overflow-y-auto p-2">
         <ScopeLabel />
-        <NavItem to="/" label="Sources" active={isHome} onNavigate={props.onNavigate} />
+        <NavItem
+          to="/"
+          label="Salesforce Catalog"
+          active={isCatalog}
+          onNavigate={props.onNavigate}
+        />
+        <NavItem
+          to="/source-manager"
+          label="Manage sources"
+          active={isSources}
+          onNavigate={props.onNavigate}
+        />
+        <NavItem to="/tools" label="Tools" active={isTools} onNavigate={props.onNavigate} />
         <NavItem
           to="/connections"
           label="Connections"
@@ -377,9 +423,14 @@ function SidebarContent(props: {
 
         <PluginNav pathname={props.pathname} onNavigate={props.onNavigate} />
 
-        {/* Sources list */}
-        <div className="mt-5 mb-1 px-2.5 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-          <span>Sources</span>
+        {/* Registered source rows from the local Executor runtime. */}
+        <div className="mt-5 mb-2 px-2.5">
+          <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Connected sources
+          </div>
+          <div className="mt-1 text-xs leading-relaxed text-muted-foreground/80">
+            Live MCP, OpenAPI, GraphQL, and bridged CLIs.
+          </div>
         </div>
 
         <SourceList pathname={props.pathname} onNavigate={props.onNavigate} />
@@ -487,7 +538,7 @@ export function Shell() {
             <div className="flex h-12 shrink-0 items-center justify-between border-b border-sidebar-border px-4">
               <Link to="/" className="flex items-center gap-1.5">
                 <span className="font-display text-base tracking-tight text-foreground">
-                  executor
+                  {APP_NAME}
                 </span>
               </Link>
               <Button
@@ -540,7 +591,9 @@ export function Shell() {
             </svg>
           </Button>
           <Link to="/" className="flex items-center gap-1.5">
-            <span className="font-display text-base tracking-tight text-foreground">executor</span>
+            <span className="font-display text-base tracking-tight text-foreground">
+              {APP_NAME}
+            </span>
           </Link>
           <div className="w-8 shrink-0" />
         </div>
