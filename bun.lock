@@ -9,6 +9,7 @@
         "@effect/language-service": "^0.85.1",
         "@effect/tsgo": "^0.5.2",
         "@effect/vitest": "catalog:",
+        "@salesforce-executor/docs-index": "workspace:*",
         "@typescript/native-preview": "^7.0.0-dev.20260410.1",
         "@vitest/expect": "catalog:",
         "@vitest/mocker": "catalog:",
@@ -39,6 +40,7 @@
         "@executor-js/local": "workspace:*",
         "@executor-js/runtime-quickjs": "workspace:*",
         "@jitl/quickjs-wasmfile-release-sync": "catalog:",
+        "@salesforce-executor/docs-index": "workspace:*",
         "effect": "catalog:",
         "quickjs-emscripten": "catalog:",
       },
@@ -149,6 +151,7 @@
         "@executor-js/storage-file": "workspace:*",
         "@executor-js/vite-plugin": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.12.1",
+        "@salesforce-executor/docs-index": "workspace:*",
         "@tanstack/react-router": "catalog:",
         "drizzle-orm": "catalog:",
         "effect": "catalog:",
@@ -844,6 +847,16 @@
         "tailwindcss": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
+      },
+    },
+    "packages/salesforce-docs-index": {
+      "name": "@salesforce-executor/docs-index",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@effect/vitest": "catalog:",
+        "@types/node": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
       },
     },
   },
@@ -2096,6 +2109,8 @@
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.60.1", "", { "os": "win32", "cpu": "x64" }, "sha512-k+600V9Zl1CM7eZxJgMyTUzmrmhB/0XZnF4pRypKAlAgxmedUA+1v9R+XOFv56W4SlHEzfeMtzujLJD22Uz5zg=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.60.1", "", { "os": "win32", "cpu": "x64" }, "sha512-lWMnixq/QzxyhTV6NjQJ4SFo1J6PvOX8vUx5Wb4bBPsEb+8xZ89Bz6kOXpfXj9ak9AHTQVQzlgzBEc1SyM27xQ=="],
+
+    "@salesforce-executor/docs-index": ["@salesforce-executor/docs-index@workspace:packages/salesforce-docs-index"],
 
     "@sec-ant/readable-stream": ["@sec-ant/readable-stream@0.4.1", "", {}, "sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg=="],
 

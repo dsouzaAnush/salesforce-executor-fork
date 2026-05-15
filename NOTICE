@@ -1,0 +1,74 @@
+Salesforce Executor
+===================
+
+This repository is a private fork of the open-source Executor project:
+
+  Project:   Executor
+  Upstream:  https://github.com/RhysSullivan/executor
+  License:   MIT (see LICENSE)
+  Copyright: (c) 2026 Rhys Sullivan
+
+The Salesforce Executor fork is licensed under the same MIT terms.
+
+Snapshot baseline
+-----------------
+
+The current upstream snapshot point is recorded in [UPSTREAM_BASE](./UPSTREAM_BASE).
+The fork is a content snapshot rather than a true git fork (the fork's root
+commit has no shared ancestor with upstream). To re-sync, see
+`scripts/sync-upstream.sh`.
+
+Upstream-originated packages vendored in this repository
+--------------------------------------------------------
+
+The following workspace packages originate upstream and are kept as private
+(`"private": true`) — they are not published from this fork:
+
+  packages/core/cli                 (@executor-js/cli)
+  packages/core/config              (@executor-js/config)
+  packages/core/execution           (@executor-js/execution)
+  packages/core/sdk                 (@executor-js/sdk)
+  packages/core/storage-core        (@executor-js/storage-core)
+  packages/core/vite-plugin         (@executor-js/vite-plugin)
+  packages/kernel/core              (@executor-js/codemode-core)
+  packages/kernel/runtime-quickjs   (@executor-js/runtime-quickjs)
+  packages/plugins/example          (@executor-js/plugin-example)
+  packages/plugins/file-secrets     (@executor-js/plugin-file-secrets)
+  packages/plugins/google-discovery (@executor-js/plugin-google-discovery)
+  packages/plugins/graphql          (@executor-js/plugin-graphql)
+  packages/plugins/keychain         (@executor-js/plugin-keychain)
+  packages/plugins/mcp              (@executor-js/plugin-mcp)
+  packages/plugins/onepassword      (@executor-js/plugin-onepassword)
+  packages/plugins/openapi          (@executor-js/plugin-openapi)
+  packages/plugins/workos-vault     (@executor-js/plugin-workos-vault)
+
+  apps/cloud         (@executor-js/cloud)
+  apps/desktop       (@executor-js/desktop)
+  apps/marketing     (@executor-js/marketing)
+  apps/local         (@executor-js/local)
+
+Each carries its own `README.md` linking back to the upstream tree path,
+and `package.json#repository` points at this fork while still attributing
+upstream via `NOTICE` and `LICENSE`.
+
+Salesforce-overlay packages
+---------------------------
+
+The following packages and apps were added by the Salesforce Executor fork
+and are not present upstream:
+
+  packages/salesforce-docs-index    (@salesforce-executor/docs-index)
+  apps/cli/src/cli/salesforce       (Salesforce setup/doctor CLI library)
+  adapters/cli-bridge               (CLI bridge stdio MCP adapter)
+  adapters/informatica-idmc         (Informatica IDMC stdio MCP adapter)
+  scripts/salesforce/*              (bun wrappers around the CLI library)
+  scripts/run-data360-mcp.{sh,mjs}  (Data 360 MCP launcher)
+  skills/salesforce-*               (Codex skill pack for Salesforce-family tools)
+
+Third-party trademarks
+----------------------
+
+Salesforce, Heroku, MuleSoft, Slack, Tableau, Data 360, Agentforce,
+Informatica, and related product names are trademarks of their respective
+owners. This fork uses official product names only to label sources in the
+curated catalog; no endorsement is implied or claimed.

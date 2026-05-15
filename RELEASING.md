@@ -1,132 +1,184 @@
-# Releasing
+# Releasing Salesforce Executor
 
-This repo uses Changesets for version orchestration and two publish paths:
-the CLI (`executor` npm package plus its platform packages) and the
-`@executor-js/*` library packages (`core`, `sdk`, and the public plugins).
+Salesforce Executor is internal-only today. There is no public npm release.
+Teammates either clone this private repo and run from source, or install a
+signed archive produced from `bun run --cwd apps/cli build:all` and attached
+to a private GitHub Release on `dsouzaAnush/salesforce-executor`.
 
-## Normal release flow
+Design note: the CLI binary is named `executor` (same as upstream). This
+fork **vendors** the upstream runtime and attaches Salesforce-specific
+behavior via:
 
-1. Add a changeset in the PR that should ship:
-   - `bun run changeset`
-2. Merge that PR to `main`.
-3. `.github/workflows/release.yml` opens or updates a `Version Packages` PR.
-4. Merge the `Version Packages` PR.
-5. The release workflow then does two things in parallel:
-   - Publishes every `@executor-js/*` library package whose current version
-     is not already on npm, via `bun run release:publish:packages`
-     (see `scripts/publish-packages.ts`).
-   - If `apps/cli/package.json` bumped, tags the commit and dispatches
-     `.github/workflows/publish-executor-package.yml`, which:
-     - runs `bun run release:check`
-     - performs a full dry-run release build before publish
-     - publishes the CLI npm package under the correct dist-tag
-     - creates or updates the GitHub release with build artifacts
+- A Salesforce-branded local app under `apps/local/src/salesforce/`.
+- A curated source catalog at `packages/salesforce-docs-index/`.
+- New `executor setup` and `executor doctor` subcommands implemented in
+  `apps/cli/src/cli/salesforce/`.
+- Local stdio MCP adapters at `adapters/cli-bridge/` and
+  `adapters/informatica-idmc/`.
 
-## Beta releases
+Renaming the binary to `salesforce-executor` would be misleading (the
+runtime IS upstream executor) and would create unnecessary diff against
+upstream for every future sync. Internal teammates know the product is
+Salesforce Executor; the binary they invoke is just `executor`.
 
-Enter prerelease mode before starting a beta train:
+---
 
-- `bun run release:beta:start`
+## Verification gates
 
-That commits `.changeset/pre.json` into the repo and causes future release PRs to produce versions like `1.5.0-beta.0`, `1.5.0-beta.1`, and so on.
+Before publishing any internal artifact, run the full gate locally from the
+repo root:
 
-When the beta train is done:
-
-- `bun run release:beta:stop`
-
-Stable versions publish to npm under `latest`.
-Beta versions publish to npm under `beta`.
-
-## Local dry run
-
-To build the full CLI release payload without publishing to npm or GitHub:
-
-- `bun run release:publish:dry-run`
-
-That produces:
-
-- platform archives in `apps/cli/dist`
-- the packed wrapper tarball in `apps/cli/dist/release`
-
-To pack the `@executor-js/*` library packages without publishing:
-
-- `bun run release:publish:packages:dry-run`
-
-## Release notes
-
-User-facing release notes live at `apps/cli/release-notes/next.md` —
-one rolling file. **This is the single source of truth users see.** Edit
-it whenever you ship a user-visible change.
-
-`apps/cli/src/release.ts` reads `next.md` and uses its contents as the
-GitHub Release body. If the file is missing or empty it falls back to
-`gh release create --generate-notes` (auto-generated from PR titles).
-
-There's no per-version archive in the repo — historical release bodies
-live on GitHub Releases (durable, indexed, linkable). When you start a
-new release cycle, replace the existing `next.md` content with your new
-entries; the previous cycle's content is already preserved on the
-matching `vX.Y.Z` release page.
-
-### Authoring rules
-
-Use this section structure (mirrors what's already in `next.md`):
-
-```markdown
-## Highlights
-
-### <user-facing story>
-
-bullets of concrete user value
-
-## Fixes
-
-## Breaking changes
-
-### <specific surface>
-
-before / after code blocks for migrations
+```bash
+bun run format:check
+bun run lint
+bun run typecheck
+bun run test
+bun run test:sources
+bun run test:release:bootstrap
 ```
 
-Lead with **user-visible stories**, not commit subjects. Group related
-commits into one story. Keep bullets single-line so diffs and dedupe
-tooling stay simple.
+`test:sources` is the Salesforce registry smoke runner. `test:release:bootstrap`
+builds the single-platform binary, exposes it from a temporary npm-install
+layout, and confirms `executor --help` and `executor web` both work
+end-to-end. Both are also wired into `.github/workflows/ci.yml`.
 
-### Attribution
+For a Salesforce-overlay PR (only `packages/salesforce-docs-index`,
+`adapters/`, `scripts/salesforce/`, `apps/cli/src/cli/salesforce/`,
+`apps/local/src/salesforce/`, or `skills/` touched) the narrower gate
+`bun run --cwd packages/salesforce-docs-index test && bun run typecheck` is
+sufficient locally, but CI will still run the full set.
 
-For external contributors, end the bullet with `Thanks @<user>` and the
-PR ref:
+---
 
-```markdown
-- OAuth2 client-credentials flow end-to-end. Thanks @octocat (#456)
+## Path 1 — clone-and-run (default)
+
+For internal teammates who want to track `main` and reach into the source.
+
+1. They clone the private repo:
+
+   ```bash
+   git clone git@github.com:dsouzaAnush/salesforce-executor.git
+   cd salesforce-executor
+   bun install
+   ```
+
+2. They start the local app:
+
+   ```bash
+   bun run dev:salesforce
+   ```
+
+3. They register sources via the dev CLI:
+
+   ```bash
+   bun run dev:cli -- doctor
+   bun run dev:cli -- setup --profile full --org "$SF_TARGET_ORG"
+   ```
+
+No release process is needed for this path beyond merging to `main`.
+
+---
+
+## Path 2 — signed archive on a private GitHub Release
+
+For internal teammates who want a single installable binary without the
+monorepo. Run this on demand; we don't auto-tag.
+
+### Pre-flight
+
+```bash
+git checkout main
+git pull --ff-only
+bun install --frozen-lockfile
+bun run release:check
 ```
 
-Don't `Thanks` maintainers, bots, or the repo owner. The lint script
-(`bun run lint:release-notes`) rejects `Thanks @claude`,
-`Thanks @rhyssullivan`, `Thanks @github-actions`, etc. — the full list
-is in `scripts/check-release-notes.ts`. Run it before pushing release
-notes.
+`release:check` runs `apps/cli typecheck`, `test:release:bootstrap`, and the
+single-platform `release:publish:dry-run` build. The dry-run produces the
+release artifacts under `apps/cli/dist/` so you can sanity-check sizes and
+file lists before tagging.
 
-### When you ship a change
+### Tag and build
 
-If your PR adds a `.changeset/*.md` for the `executor` package, also
-edit `apps/cli/release-notes/next.md`. The changeset describes the
-version bump; the release-notes file describes the user impact. They're
-different audiences and shouldn't be conflated.
+Pick a version that does not collide with the upstream Executor cadence —
+the convention is `v<n>-sfdc-<m>` (for example `v1-sfdc-0`, `v1-sfdc-1`).
+Salesforce Executor versions are independent from upstream's semver and are
+not visible to npm.
 
-The `.changeset/*.md` body is fine as a one-liner pointing at the
-release-notes section it expands.
+```bash
+version="1-sfdc-0"
+git tag "v${version}"
+git push origin "v${version}"
 
-## Notes
+EXECUTOR_VERSION="$version" bun run --cwd apps/cli build:all
+```
 
-- Changesets owns the published CLI version via `apps/cli/package.json`.
-- Only `apps/cli/package.json` should change during release versioning; the rest of the workspace is not version-synced for release PRs.
-- Changesets changelog file generation is disabled (`changelog: false`
-  in `.changeset/config.json`), but per-package `CHANGELOG.md` stubs are
-  still committed. The `changesets/action@v1` GitHub Action (the wrapper
-  around the CLI used in `release.yml`) reads each bumped package's
-  `CHANGELOG.md` to build the Version Packages PR description and crashes
-  with `ENOENT` if any are missing. The stubs satisfy that read; the
-  changesets CLI alone doesn't need them.
-- The publish workflow supports either npm trusted publishing or an `NPM_TOKEN` secret.
-- Re-running the publish workflow for the same tag is safe for packages that are already on npm; existing versions are skipped.
+`build:all` produces 8 platform archives under
+`apps/cli/dist/executor-<plat>-<arch>/bin/` plus the
+`apps/cli/dist/executor/` npm wrapper (kept for local testing — not
+published).
+
+### Package the release assets
+
+```bash
+bun run --cwd apps/cli bun run src/build.ts release-assets
+ls apps/cli/dist/executor-*.{tar.gz,zip}
+```
+
+Each platform produces one archive containing the binary, the QuickJS WASM
+sidecar, and the platform keyring binding.
+
+### Create the private GitHub Release
+
+```bash
+gh release create "v${version}" \
+  apps/cli/dist/executor-*.tar.gz \
+  apps/cli/dist/executor-*.zip \
+  --repo dsouzaAnush/salesforce-executor \
+  --title "v${version}" \
+  --notes-file apps/cli/release-notes/next.md \
+  --verify-tag
+```
+
+Internal teammates can then install with:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsouzaAnush/salesforce-executor/main/scripts/install.sh \
+  | VERSION="${version}" bash
+```
+
+`scripts/install.sh` downloads the right archive for their platform into
+`~/.executor/bin/` and patches `$PATH` in their shell config. (The install
+dir keeps the upstream `.executor` name since the binary IS upstream
+executor; only the source catalog and subcommands are Salesforce-specific.)
+
+### Release notes
+
+`apps/cli/release-notes/next.md` is the single rolling source of truth.
+Replace it before each tag — its previous contents are preserved on the
+matching GitHub Release page.
+
+---
+
+## What is intentionally not part of the release flow
+
+- **No npm publish.** `apps/cli/package.json` is `"private": true` and every
+  `@executor-js/*` library `package.json` is also marked private. The
+  upstream-shaped `release.yml`, `publish-executor-package.yml`,
+  `pkg-pr-new.yml`, and `publish-desktop.yml` workflows were deleted as
+  part of the fork bootstrap (see `git log`).
+- **No CLI rename.** The binary stays `executor`. Internal users
+  distinguish the fork by the GitHub repo URL
+  (`dsouzaAnush/salesforce-executor`), the Salesforce-branded local app,
+  the `setup`/`doctor` subcommands (upstream doesn't have those), and the
+  curated source catalog. Renaming the binary would mislead users about
+  what the runtime is and bloat the diff vs upstream.
+- **No Changesets-driven release PRs.** `.changeset/config.json` still
+  exists for tracking purposes, but no automated PR opens because the
+  `Release` workflow that drove it is gone.
+- **No desktop / cloud / marketing builds.** Those apps still live in
+  `apps/desktop`, `apps/cloud`, `apps/marketing` to keep `sync-upstream.sh`
+  cheap, but they're not part of the Salesforce internal release surface.
+
+If any of those are needed later, the patterns above translate
+straightforwardly — but flip them on intentionally rather than by accident.

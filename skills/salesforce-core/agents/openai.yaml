@@ -1,0 +1,3 @@
+display_name: Salesforce Core
+short_description: Work with Salesforce orgs, metadata, SObjects, flows, and CLI/MCP tools.
+default_prompt: Use official Salesforce MCP, CLI, and API sources first; require approval for mutating org actions.

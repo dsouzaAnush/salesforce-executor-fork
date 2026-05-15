@@ -1,6 +1,6 @@
 import { lazy, type ComponentProps, type ComponentType } from "react";
 import type { SourcePlugin } from "@executor-js/sdk/client";
-import { mcpPresets } from "../sdk/presets";
+import { mcpPresets, type McpPreset } from "../sdk/presets";
 
 const importAdd = () => import("./AddMcpSource");
 const importEdit = () => import("./EditMcpSource");
@@ -21,6 +21,11 @@ export interface McpSourcePluginOptions {
    * trusted local contexts where the server has the matching flag set.
    */
   readonly allowStdio?: boolean;
+  /** Vendor-specific presets contributed by the host. Appended after the
+   *  built-in `mcpPresets` so vendor entries appear last in the grid
+   *  unless the host opts into custom ordering. Stdio entries are
+   *  dropped when `allowStdio` is false, same rule as built-ins. */
+  readonly extraPresets?: ReadonlyArray<McpPreset>;
 }
 
 export const createMcpSourcePlugin = (options?: McpSourcePluginOptions): SourcePlugin => {
@@ -30,11 +35,17 @@ export const createMcpSourcePlugin = (options?: McpSourcePluginOptions): SourceP
     <LazyAddMcpSource {...props} allowStdio={allowStdio} />
   );
 
-  const presets = allowStdio
-    ? mcpPresets
-    : mcpPresets.filter(
-        (p) => !("transport" in p && (p as { transport?: string }).transport === "stdio"),
-      );
+  const dropStdio = (list: ReadonlyArray<McpPreset>): ReadonlyArray<McpPreset> =>
+    allowStdio
+      ? list
+      : list.filter(
+          (p) => !("transport" in p && (p as { transport?: string }).transport === "stdio"),
+        );
+
+  const presets: ReadonlyArray<McpPreset> = [
+    ...dropStdio(mcpPresets),
+    ...dropStdio(options?.extraPresets ?? []),
+  ];
 
   return {
     key: "mcp",

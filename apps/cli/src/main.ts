@@ -105,6 +105,8 @@ import {
 // Embedded web UI — baked into compiled binaries via `with { type: "file" }`
 import embeddedWebUI from "./embedded-web-ui.gen";
 
+import { doctorCommand, setupCommand } from "./cli/salesforce";
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -1474,8 +1476,12 @@ const root = Command.make("executor").pipe(
     webCommand,
     daemonCommand,
     mcpCommand,
+    setupCommand,
+    doctorCommand,
   ] as const),
-  Command.withDescription("Executor local CLI"),
+  Command.withDescription(
+    "Executor local CLI (Salesforce Executor fork — adds `setup` and `doctor` subcommands for the curated Salesforce-family source catalog).",
+  ),
 );
 
 // ---------------------------------------------------------------------------

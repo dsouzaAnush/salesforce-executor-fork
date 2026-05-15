@@ -770,6 +770,11 @@ export interface OpenApiPluginOptions {
   /** If provided, source add/remove is mirrored to executor.jsonc
    *  (best-effort — file errors are logged, not raised). */
   readonly configFile?: ConfigFileSink;
+  /** Vendor-specific presets contributed by the host that should
+   *  appear alongside `openApiPresets` in the Connect dialog. JSON-
+   *  serialized through `@executor-js/vite-plugin` into the client
+   *  bundle, so values must be structurally serializable. */
+  readonly extraPresets?: ReadonlyArray<import("./presets").OpenApiPreset>;
 }
 
 const toOpenApiSourceConfig = (
@@ -987,6 +992,9 @@ export const openApiPlugin = definePlugin((options?: OpenApiPluginOptions) => {
   return {
     id: "openapi" as const,
     packageName: "@executor-js/plugin-openapi",
+    // Surfaced to the client bundle via @executor-js/vite-plugin so the
+    // host's Connect dialog can show vendor presets alongside built-ins.
+    clientConfig: { extraPresets: options?.extraPresets ?? [] },
     schema: openapiSchema,
     storage: (deps): OpenapiStore => makeDefaultOpenapiStore(deps),
 

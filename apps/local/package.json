@@ -39,6 +39,7 @@
     "@executor-js/sdk": "workspace:*",
     "@executor-js/storage-file": "workspace:*",
     "@executor-js/vite-plugin": "workspace:*",
+    "@salesforce-executor/docs-index": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@tanstack/react-router": "catalog:",
     "drizzle-orm": "catalog:",

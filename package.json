@@ -23,6 +23,7 @@
   "workspaces": [
     "packages/*/*",
     "packages/react",
+    "packages/salesforce-docs-index",
     "apps/*",
     "examples/*"
   ],
@@ -31,6 +32,11 @@
     "dev": "turbo run dev --filter='!@executor-js/desktop' --filter='!@executor-js/cloud'",
     "dev:desktop": "turbo run dev",
     "dev:cli": "bun run apps/cli/src/main.ts",
+    "dev:salesforce": "turbo run dev --filter='!@executor-js/desktop' --filter='!@executor-js/cloud' --filter='!@executor-js/marketing'",
+    "doctor:salesforce": "bun run scripts/salesforce/doctor.ts",
+    "setup:salesforce": "bun run scripts/salesforce/setup.ts",
+    "docs:refresh": "bun run scripts/salesforce/docs-refresh.ts",
+    "test:sources": "bun run scripts/salesforce/test-sources.ts && vitest run packages/salesforce-docs-index/src/registry.test.ts",
     "test": "turbo run test",
     "test:release:bootstrap": "vitest run tests/release-bootstrap-smoke.test.ts",
     "build:packages": "bun run --filter='@executor-js/storage-core' build && bun run --filter='@executor-js/codemode-core' build && bun run --filter='@executor-js/runtime-quickjs' build && bun run --filter='@executor-js/sdk' build && bun run --filter='@executor-js/config' build && bun run --filter='@executor-js/execution' build && bun run --filter='@executor-js/cli' build && bun run --filter='@executor-js/plugin-*' build",
@@ -66,6 +72,7 @@
     "@effect/language-service": "^0.85.1",
     "@effect/tsgo": "^0.5.2",
     "@effect/vitest": "catalog:",
+    "@salesforce-executor/docs-index": "workspace:*",
     "@typescript/native-preview": "^7.0.0-dev.20260410.1",
     "@vitest/expect": "catalog:",
     "@vitest/mocker": "catalog:",

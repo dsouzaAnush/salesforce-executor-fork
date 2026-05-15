@@ -1,0 +1,3 @@
+display_name: Salesforce Heroku
+short_description: Operate Heroku apps, pipelines, releases, dynos, config, and Platform API sources.
+default_prompt: Use official Heroku MCP, CLI, and Platform API sources; require approval for deploy/config/runtime changes.
