@@ -372,9 +372,7 @@ function SidebarContent(props: {
   latestVersion: string | null;
   channel: UpdateChannel;
 }) {
-  const isCatalog = props.pathname === "/";
-  const isSources = props.pathname === "/source-manager" || props.pathname.startsWith("/sources/");
-  const isTools = props.pathname === "/tools";
+  const isHome = props.pathname === "/";
   const isSecrets = props.pathname === "/secrets";
   const isConnections = props.pathname === "/connections";
   const isPolicies = props.pathname === "/policies";
@@ -394,19 +392,7 @@ function SidebarContent(props: {
 
       <nav className="flex flex-1 flex-col overflow-y-auto p-2">
         <ScopeLabel />
-        <NavItem
-          to="/"
-          label="Salesforce Catalog"
-          active={isCatalog}
-          onNavigate={props.onNavigate}
-        />
-        <NavItem
-          to="/source-manager"
-          label="Manage sources"
-          active={isSources}
-          onNavigate={props.onNavigate}
-        />
-        <NavItem to="/tools" label="Tools" active={isTools} onNavigate={props.onNavigate} />
+        <NavItem to="/" label="Sources" active={isHome} onNavigate={props.onNavigate} />
         <NavItem
           to="/connections"
           label="Connections"
@@ -423,14 +409,9 @@ function SidebarContent(props: {
 
         <PluginNav pathname={props.pathname} onNavigate={props.onNavigate} />
 
-        {/* Registered source rows from the local Executor runtime. */}
-        <div className="mt-5 mb-2 px-2.5">
-          <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Connected sources
-          </div>
-          <div className="mt-1 text-xs leading-relaxed text-muted-foreground/80">
-            Live MCP, OpenAPI, GraphQL, and bridged CLIs.
-          </div>
+        {/* Sources list */}
+        <div className="mt-5 mb-1 px-2.5 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          <span>Sources</span>
         </div>
 
         <SourceList pathname={props.pathname} onNavigate={props.onNavigate} />

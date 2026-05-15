@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SalesforceSourcesPage } from "../salesforce/SalesforceSourcesPage";
+import { SourcesPage } from "@executor-js/react/pages/sources";
 
 export const Route = createFileRoute("/")({
-  component: SalesforceSourcesPage,
+  component: SourcesPage,
 });
