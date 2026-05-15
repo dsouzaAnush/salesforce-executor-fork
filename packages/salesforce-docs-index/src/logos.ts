@@ -143,7 +143,8 @@ export const sourceLogoKeys: Readonly<Record<string, SalesforceProductLogoKey>> 
 /**
  * Stable display group for the Salesforce catalog page. Replaces the
  * brittle `source.product.startsWith("Agentforce")`-style routing in
- * `SalesforceSourcesPage`. Add new entries here when adding new sources;
+ * preset icons in the Connect dialog and on sidebar source rows. Add
+ * new entries here when adding new sources;
  * the registry test pins every source id against this map.
  */
 export type SalesforceProductGroup =

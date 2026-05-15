@@ -335,11 +335,25 @@ packaging pipeline.
 Salesforce-specific code lives entirely as overlay files committed on
 top of `main`:
 
-- `packages/salesforce-docs-index/` — curated source registry
-- `apps/local/public/salesforce-logos/`, `apps/local/src/salesforce/`,
-  the two `routes/{sources,source-manager}.tsx` files, and the minimal
-  delta in `apps/local/src/web/shell.tsx` (Salesforce brand, nav, and
-  registry-aware sidebar list)
+- `packages/salesforce-docs-index/` — curated source registry plus a
+  `salesforcePresets` adapter that splits the registry into per-plugin
+  preset arrays. The local app forwards these to upstream's `mcp` /
+  `openapi` / `graphql` plugins via the standard `extraPresets`
+  contribution point in `apps/local/executor.config.ts`, so the
+  Salesforce catalog surfaces inside the upstream `Connect` dialog
+  (no parallel sources page, no `/source-manager` detour).
+- `apps/local/public/salesforce-logos/`, `apps/local/src/salesforce/`
+  (`OfficialProductLogo` only), and the minimal delta in
+  `apps/local/src/web/shell.tsx` — brand wordmark + logo in the
+  sidebar header and registry-aware sidebar source list. The home
+  route, `/sources/...`, `/tools`, and `/source-manager` are not
+  overridden; they remain upstream's `SourcesPage` / detail / add
+  flows verbatim.
+- Upstream plugin signature additions: `extraPresets?` on
+  `mcpPlugin` / `openApiPlugin` / `graphqlPlugin` and their `*/client`
+  factories (3-line additive change per plugin, JSON-serialized
+  through `@executor-js/vite-plugin` like the existing `allowStdio`
+  flag).
 - `apps/cli/src/cli/salesforce/` — `executor setup` and
   `executor doctor` subcommands wired into `apps/cli/src/main.ts`
 - `adapters/cli-bridge/`, `adapters/informatica-idmc/`
