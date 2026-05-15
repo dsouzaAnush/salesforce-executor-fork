@@ -300,6 +300,11 @@ export interface GraphqlPluginOptions {
   /** If provided, source add/remove is mirrored to executor.jsonc
    *  (best-effort — file errors are logged, not raised). */
   readonly configFile?: ConfigFileSink;
+  /** Vendor-specific presets contributed by the host that should
+   *  appear alongside `graphqlPresets` in the Connect dialog. JSON-
+   *  serialized through `@executor-js/vite-plugin` into the client
+   *  bundle. */
+  readonly extraPresets?: ReadonlyArray<import("./presets").GraphqlPreset>;
 }
 
 const toGraphqlConfigEntry = (
@@ -969,6 +974,9 @@ export const graphqlPlugin = definePlugin((options?: GraphqlPluginOptions) => {
   return {
     id: "graphql" as const,
     packageName: "@executor-js/plugin-graphql",
+    // Surfaced to the client bundle via @executor-js/vite-plugin so the
+    // host's Connect dialog can show vendor presets alongside built-ins.
+    clientConfig: { extraPresets: options?.extraPresets ?? [] },
     schema: graphqlSchema,
     storage: (deps): GraphqlStore => makeDefaultGraphqlStore(deps),
 

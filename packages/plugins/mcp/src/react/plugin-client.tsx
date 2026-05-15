@@ -13,6 +13,7 @@
 import { defineClientPlugin } from "@executor-js/sdk/client";
 
 import { createMcpSourcePlugin } from "./source-plugin";
+import type { McpPreset } from "../sdk/presets";
 
 export interface McpClientConfig {
   /**
@@ -21,6 +22,10 @@ export interface McpClientConfig {
    * Defaults to false — same default as the server flag.
    */
   readonly allowStdio?: boolean;
+  /** Vendor presets forwarded from the server-side plugin's
+   *  `extraPresets`. Serialized through the Vite plugin into the
+   *  client bundle so values must be JSON-safe. */
+  readonly extraPresets?: ReadonlyArray<McpPreset>;
 }
 
 export default function createMcpClientPlugin(config?: McpClientConfig) {
@@ -28,6 +33,7 @@ export default function createMcpClientPlugin(config?: McpClientConfig) {
     id: "mcp" as const,
     sourcePlugin: createMcpSourcePlugin({
       allowStdio: config?.allowStdio ?? false,
+      extraPresets: config?.extraPresets ?? [],
     }),
   });
 }

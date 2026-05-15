@@ -924,6 +924,12 @@ export interface McpPluginOptions {
   /** If provided, source add/remove is mirrored to executor.jsonc
    *  (best-effort — file errors are logged, not raised). */
   readonly configFile?: ConfigFileSink;
+  /** Extra presets contributed by the host (e.g. a vendor-specific
+   *  catalog) that should appear alongside `mcpPresets` in the
+   *  Connect dialog's "Popular sources" grid. JSON-serialized into
+   *  the client bundle via the Vite plugin, so values must be
+   *  structurally serializable. */
+  readonly extraPresets?: ReadonlyArray<import("./presets").McpPreset>;
 }
 
 const secretRef = (id: string): string => `${SECRET_REF_PREFIX}${id}`;
@@ -1100,8 +1106,10 @@ export const mcpPlugin = definePlugin((options?: McpPluginOptions) => {
     // `@executor-js/vite-plugin`). The MCP `./client` factory reads
     // `allowStdio` and gates the stdio tab + presets in AddMcpSource —
     // so the server's `dangerouslyAllowStdioMCP` flag is the single
-    // source of truth for both runtime and UI.
-    clientConfig: { allowStdio },
+    // source of truth for both runtime and UI. `extraPresets` lets a
+    // host append vendor-specific entries (e.g. Salesforce catalog)
+    // without forking the plugin.
+    clientConfig: { allowStdio, extraPresets: options?.extraPresets ?? [] },
     schema: mcpSchema,
     storage: (deps): McpBindingStore => makeMcpStore(deps),
 
